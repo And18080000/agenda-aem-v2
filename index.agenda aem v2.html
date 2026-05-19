@@ -1,0 +1,1049 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agenda A&amp;M Produções</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="manifest" href="data:application/json;charset=utf-8,%7B%22name%22%3A%22Agenda%20A%26M%22%2C%22short_name%22%3A%22AgendaAM%22%2C%22display%22%3A%22standalone%22%2C%22start_url%22%3A%22.%22%2C%22background_color%22%3A%22%230D1421%22%2C%22theme_color%22%3A%22%233B82F6%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22https%3A%2F%2Fapi.dicebear.com%2F7.x%2Fbottts%2Fsvg%3Fseed%3DA%26M%22%2C%22sizes%22%3A%22192x192%22%2C%22type%22%3A%22image%2Fsvg%2Bxml%22%7D%5D%7D">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <script>
+        let dP; window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); dP = e; const b = document.createElement('button'); b.innerHTML = 'Instalar App'; b.style.cssText = 'background:#3b82f6;color:#fff;border:none;padding:8px 20px;border-radius:50px;font-family:sans-serif;font-weight:600;font-size:14px;cursor:pointer;margin-top:15px;transition:0.3s;box-shadow:0 4px 15px rgba(59,130,246,0.3);'; b.onclick = async () => { if (!dP) return; dP.prompt(); const { outcome } = await dP.userChoice; if (outcome === 'accepted') b.remove(); dP = null; }; const c = document.getElementById('pwa-install-container'); if(c) c.appendChild(b); }); 
+        const isIos = () => /iphone|ipad|ipod/.test(window.navigator.userAgent.toLowerCase()); const isStandalone = () => ('standalone' in window.navigator) && window.navigator.standalone; if (isIos() && !isStandalone()) { const ib = document.createElement('div'); ib.innerHTML = 'Para instalar: toque em <i class="fas fa-share-square"></i> e <b>Adicionar ao Ecrã Principal</b> <button style="margin-left:10px;color:#9ca3af;" onclick="this.parentElement.remove()">✕</button>'; ib.style.cssText = 'position:fixed;bottom:20px;left:20px;right:20px;background:#1C2833;color:#fff;padding:15px;border-radius:12px;text-align:center;z-index:99999;border:1px solid #3B82F6;font-size:13px;'; setTimeout(() => document.body.appendChild(ib), 3000); }
+
+        // Configuração do Tailwind CSS
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        // Paleta Dark Mode refinada
+                        'dark-primary': '#0D1421', // Fundo Principal (Deep Charcoal)
+                        'dark-secondary': '#1C2833', // Fundo de Card (Slightly Lighter Charcoal)
+                        'neon-accent': '#3B82F6',   // Azul Principal / Destaque
+                        'neon-hover': '#60A5FA',    // Azul de Hover
+                        'status-available': '#10B981', // Verde (Disponível)
+                        'status-reserved': '#EF4444',  // Vermelho (Reservado)
+                        'status-confirm': '#FACC15',   // Amarelo Vibrante (A Confirmar)
+                        'status-unavailable': '#6B7280', // Cinza (Indisponível)
+                    },
+                    borderRadius: {
+                        'xl': '1.5rem', // Cantos mais arredondados para um visual moderno
+                    }
+                }
+            },
+            // Garante que o modo escuro é o padrão visual
+            darkMode: 'class', 
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+
+        /* Aplica o Dark Mode por padrão no CSS */
+        body, .bg-gray-100 { 
+            background-color: var(--tw-colors-dark-primary); 
+            color: #E5E7EB; 
+        }
+        .dark .bg-white { background-color: var(--tw-colors-dark-secondary); }
+        .dark .text-primary { color: var(--tw-colors-neon-accent); }
+        .dark .bg-blue-50 { background-color: #1F2937; border-color: #374151; }
+        .dark input, .dark select, .dark textarea { background-color: #111827; border-color: #4B5563; color: #E5E7EB; }
+        .dark footer { background-color: #000000; }
+
+        /* Estilos de Cartão Moderno */
+        .modern-card {
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(5px);
+            transition: all 0.5s ease-in-out;
+        }
+        .modern-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(59, 130, 246, 0.15);
+        }
+
+        /* Animação de fade-in para seções */
+        .fade-in { animation: fadeIn 0.6s ease-in-out; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* Estilos dos dias do calendário */
+        .calendar-day {
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            position: relative;
+            min-height: 70px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 8px;
+            border-radius: 0.75rem; /* Mais arredondado */
+            border: 1px solid rgba(255,255,255,0.05);
+            background-color: #18202b;
+            text-align: center;
+            box-shadow: inset 0 0 5px rgba(0,0,0,0.5);
+        }
+        .calendar-day:hover {
+            transform: scale(1.03);
+            box-shadow: 0 6px 15px rgba(59, 130, 246, 0.1);
+            z-index: 10;
+        }
+        .calendar-day.selected {
+            animation: pulse 1.5s infinite;
+            border: 3px solid #F59E0B;
+            box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.4);
+        }
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(245, 158, 11, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); }
+        }
+        
+        /* Cores do Status (Consistente com o Admin) */
+        .calendar-day.disabled {
+            background-color: #374151 !important; /* Cinza escuro */
+            border: 2px solid #3B82F6 !important; /* Borda azul neon */
+            color: #FFFFFF;
+            pointer-events: none;
+            text-align: left !important;
+            align-items: flex-start !important;
+        }
+        .calendar-day.booked {
+            background-color: #EF4444 !important; /* Vermelho vibrante */
+            color: white;
+            pointer-events: none;
+        }
+        .calendar-day.available, .calendar-day.available-unregistered {
+            background-color: #10B981 !important; /* Verde Esmeralda */
+            color: white;
+            cursor: pointer;
+        }
+        .calendar-day.to-confirm {
+            background-color: #F59E0B !important; /* Laranja conforme imagem */
+            color: white;
+            pointer-events: none;
+        }
+        
+        /* Alinhamento à esquerda para o status em dias indisponíveis */
+        .calendar-day.disabled .calendar-day-status {
+            text-align: left !important;
+        }
+
+        .calendar-day-number {
+            font-weight: 800; /* Mais ousado */
+            font-size: clamp(1rem, 3vw, 1.2rem);
+            align-self: flex-start;
+            color: white;
+        }
+        
+        .calendar-day-status {
+            font-size: clamp(0.7rem, 2.5vw, 0.8rem);
+            text-align: center;
+            padding: 2px 4px;
+            border-radius: 4px;
+            margin-top: 4px;
+            background-color: rgba(255,255,255,0.1);
+            align-self: stretch;
+            line-height: 1.2;
+            overflow-wrap: break-word; 
+        }
+
+        /* Texto Disponível em Verde com fundo branco no calendário */
+        .calendar-day.available .calendar-day-status {
+            background-color: #FFFFFF;
+            color: #10B981;
+            font-weight: 800;
+        }
+
+        /* Texto Reservado em Vermelho com fundo branco no calendário */
+        .calendar-day.booked .calendar-day-status {
+            background-color: #FFFFFF;
+            color: #EF4444;
+            font-weight: 800;
+        }
+
+        /* Texto A Confirmar em Amarelo com fundo branco no calendário */
+        .calendar-day.to-confirm .calendar-day-status {
+            background-color: #FFFFFF;
+            color: #FACC15;
+            font-weight: 800;
+        }
+
+        /* Texto Indisponível com Letras em Vermelho e fundo branco */
+        .calendar-day.status-indisponivel .calendar-day-status {
+            background-color: #FFFFFF !important;
+            color: #EF4444 !important;
+            font-weight: 900;
+            text-transform: uppercase;
+            box-shadow: 0 0 10px rgba(239, 68, 68, 0.4);
+            padding: 4px 6px !important;
+        }
+
+        /* Estilo da Logo */
+        .logo-container {
+            max-height: 120px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+        }
+        .logo-preview {
+            max-height: 80px;
+            max-width: 100%;
+            object-fit: contain;
+            filter: drop-shadow(0 0 5px rgba(59, 130, 246, 0.5));
+        }
+
+        /* Estilo do Input de Data/Select */
+        .form-input {
+            border-color: #4B5563;
+            background-color: #111827;
+            transition: all 0.3s;
+        }
+        .form-input:focus {
+            border-color: var(--tw-colors-neon-accent);
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5);
+        }
+
+        /* Ocultar scrollbar mantendo funcionalidade */
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+
+        /* Ajustes específicos para mobile */
+        @media (max-width: 640px) {
+            .calendar-day { min-height: 58px !important; padding: 4px !important; border-radius: 0.5rem; }
+            .calendar-day-status { font-size: 0.55rem !important; }
+            .calendar-day-number { font-size: 0.9rem !important; }
+            .logo-preview { max-height: 45px !important; }
+            .modern-card { padding: 1.25rem !important; }
+            #calendar-header div { font-size: 0.75rem; }
+        }
+    </style>
+</head>
+<!-- Aplica a classe 'dark' ao body para ativar o tema escuro -->
+<body class="dark min-h-screen">
+    <header class="bg-dark-secondary shadow-lg sticky top-0 z-20">
+        <div class="container mx-auto px-4 py-4 md:py-6">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="logo-container mb-4 md:mb-0">
+                    <!-- LOGO ATUALIZADA -->
+                    <img id="logo-preview" src="https://placehold.co/600x120/1c2833/3B82F6?text=A%26M+Produções" alt="Logo A&amp;M Produções" class="logo-preview" onerror="this.onerror=null;this.src='https://placehold.co/600x120/1c2833/3B82F6?text=A%26M+Produções'">
+                </div>
+                <div class="flex space-x-2 sm:space-x-3 items-center overflow-x-auto w-full md:w-auto justify-start md:justify-center scrollbar-hide pb-2 md:pb-0">
+                    <button onclick="showSection('home')" class="whitespace-nowrap px-4 py-2 text-xs sm:text-base rounded-full hover:bg-neon-accent/20 transition text-gray-200 bg-dark-primary md:bg-transparent">Início</button>
+                    <button onclick="showSection('schedule')" class="whitespace-nowrap px-4 py-2 text-xs sm:text-base rounded-full hover:bg-neon-accent/20 transition text-gray-200 bg-dark-primary md:bg-transparent">Agendar</button>
+                    <button onclick="showSection('search')" class="whitespace-nowrap px-4 py-2 text-xs sm:text-base rounded-full hover:bg-neon-accent/20 transition text-gray-200 bg-dark-primary md:bg-transparent">Pesquisar</button>
+                    <button onclick="showSection('info')" class="whitespace-nowrap px-4 py-2 text-xs sm:text-base rounded-full hover:bg-neon-accent/20 transition text-gray-200 bg-dark-primary md:bg-transparent">Informações</button>
+                    <button id="dark-mode-toggle" class="flex-shrink-0 p-2 rounded-full hover:bg-neon-accent/20 transition relative text-neon-accent bg-dark-primary md:bg-transparent">
+                        <i class="fas fa-sun"></i> <!-- Ícone inicial é o sol, pois o modo escuro é padrão -->
+                        <div id="loading-spinner" class="hidden absolute inset-0 flex items-center justify-center">
+                            <i class="fas fa-spinner fa-spin text-white"></i>
+                        </div>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-4 py-10">
+        <section id="home-section" class="fade-in">
+            <div class="bg-dark-secondary modern-card p-6 md:p-10 mb-12 rounded-xl">
+                <h1 class="text-4xl font-extrabold text-neon-accent mb-2 tracking-wide">Bem-vindo(a)</h1>
+                <h2 class="text-2xl font-semibold text-gray-200 mb-6">Agenda A&amp;M Produções</h2>
+                <p class="text-gray-400 mb-8 max-w-2xl">Sua data especial merece o nosso melhor. Utilize nosso sistema moderno e seguro para verificar a disponibilidade e solicitar o agendamento do seu evento.</p>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="bg-dark-primary p-6 rounded-lg border border-neon-accent/30 hover:border-neon-accent transition transform hover:scale-[1.02]">
+                        <div class="text-neon-accent mb-3">
+                            <i class="fas fa-calendar-alt text-3xl"></i>
+                        </div>
+                        <h3 class="font-bold text-xl mb-2 text-gray-100">Visão Geral</h3>
+                        <p class="text-gray-400 text-sm">Calendário atualizado em tempo real para sua comodidade.</p>
+                    </div>
+                    
+                    <div class="bg-dark-primary p-6 rounded-lg border border-neon-accent/30 hover:border-neon-accent transition transform hover:scale-[1.02]">
+                        <div class="text-neon-accent mb-3">
+                            <i class="fas fa-mobile-alt text-3xl"></i>
+                        </div>
+                        <h3 class="font-bold text-xl mb-2 text-gray-100">Comunicação Rápida</h3>
+                        <p class="text-gray-400 text-sm">Solicitação enviada diretamente para nossa equipe via WhatsApp.</p>
+                    </div>
+                    
+                    <div class="bg-dark-primary p-6 rounded-lg border border-neon-accent/30 hover:border-neon-accent transition transform hover:scale-[1.02]">
+                        <div class="text-neon-accent mb-3">
+                            <i class="fas fa-fingerprint text-3xl"></i>
+                        </div>
+                        <h3 class="font-bold text-xl mb-2 text-gray-100">Segurança</h3>
+                        <p class="text-gray-400 text-sm">A data só é confirmada após a validação e reserva do administrador.</p>
+                    </div>
+                </div>
+                
+                <div class="mt-10 text-center">
+                    <button onclick="showSection('schedule')" class="bg-neon-accent hover:bg-neon-hover text-dark-primary font-extrabold py-3 px-8 rounded-full shadow-lg shadow-neon-accent/50 transition transform hover:scale-105">
+                        Verificar Agenda <i class="fas fa-calendar-check ml-2"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="bg-dark-secondary modern-card p-6 rounded-xl">
+                <h2 class="text-2xl font-bold text-neon-accent mb-6 border-b border-gray-700/50 pb-3">Próximas Datas Disponíveis</h2>
+                <div id="available-dates" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                    <div class="text-center py-4 bg-dark-primary rounded-lg text-gray-400">Carregando...</div>
+                </div>
+            </div>
+        </section>
+
+        <section id="schedule-section" class="hidden fade-in">
+            <div class="bg-dark-secondary modern-card p-6 rounded-xl">
+                <h1 class="text-3xl font-bold text-neon-accent mb-6 border-b border-gray-700/50 pb-3">Solicitar Agendamento</h1>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <div>
+                        <h2 class="text-xl font-semibold mb-4 text-gray-100">Calendário de Disponibilidade</h2>
+                        <div class="flex justify-between items-center mb-4">
+                            <button id="prev-month-btn" class="px-3 py-1 bg-dark-primary rounded-lg hover:bg-gray-700 transition text-gray-200 border border-gray-700"><i class="fas fa-chevron-left"></i></button>
+                            <h3 id="current-month-year" class="text-xl font-bold text-neon-accent"></h3>
+                            <button id="next-month-btn" class="px-3 py-1 bg-dark-primary rounded-lg hover:bg-gray-700 transition text-gray-200 border border-gray-700"><i class="fas fa-chevron-right"></i></button>
+                        </div>
+                        <div id="calendar-header" class="grid grid-cols-7 gap-1 mb-1 font-semibold text-neon-accent">
+                             <div class="text-center py-2">Dom</div>
+                             <div class="text-center py-2">Seg</div>
+                             <div class="text-center py-2">Ter</div>
+                             <div class="text-center py-2">Qua</div>
+                             <div class="text-center py-2">Qui</div>
+                             <div class="text-center py-2">Sex</div>
+                             <div class="text-center py-2">Sáb</div>
+                        </div>
+                        <div id="calendar" class="w-full grid grid-cols-7 gap-1 sm:gap-2">
+                            <div class="col-span-7 text-center py-8 bg-dark-primary rounded-lg text-gray-400">
+                                <i class="fas fa-spinner fa-spin text-2xl text-neon-accent"></i>
+                                <p class="mt-2">Carregando calendário...</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Legenda Atualizada com Cores e Status -->
+                        <div class="mt-8 bg-dark-primary p-5 rounded-xl border border-neon-accent/30 text-gray-200">
+                            <h3 class="font-bold text-lg mb-3 text-neon-accent">Legenda:</h3>
+                            <div class="grid grid-cols-2 gap-y-2 text-sm">
+                                <div class="flex items-center"><div class="w-4 h-4 rounded-full mr-2 bg-status-available"></div><span class="text-status-available font-bold">Disponível</span></div>
+                                <div class="flex items-center"><div class="w-4 h-4 rounded-full mr-2 bg-status-reserved"></div><span class="text-status-reserved font-bold">Reservado</span></div>
+                                <div class="flex items-center"><div class="w-4 h-4 rounded-full mr-2 bg-status-confirm"></div><span class="text-status-confirm font-bold">A Confirmar</span></div>
+                                <div class="flex items-center"><div class="w-4 h-4 rounded-full mr-2 bg-status-unavailable"></div><span class="text-red-500 font-bold uppercase">Indisponível</span></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h2 class="text-xl mb-4 flex items-baseline gap-x-3 flex-wrap text-gray-100">
+                            <span class="font-bold underline">Formulário de Solicitação</span>
+                            <span class="text-base font-bold text-neon-accent/80">(Permitido para múltiplas datas)</span>
+                        </h2>
+                        <form id="schedule-form" class="space-y-4">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label for="selected-date" class="block text-gray-300 font-medium mb-1">Datas Selecionadas</label>
+                                    <input type="text" id="selected-date" readonly class="form-input w-full px-4 py-2 border rounded-lg bg-dark-primary text-gray-200">
+                                </div>
+                                <div>
+                                    <label for="date-picker" class="block text-gray-300 font-medium mb-1">Adicionar outra data</label>
+                                    <input type="date" id="date-picker" class="form-input w-full px-4 py-2 border rounded-lg">
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <label for="name" class="block text-gray-300 font-medium mb-1">Nome Completo *</label>
+                                <input type="text" id="name" required class="form-input w-full px-4 py-2 border rounded-lg">
+                            </div>
+                            
+                            <div>
+                                <label for="email" class="block text-gray-300 font-medium mb-1">E-mail *</label>
+                                <input type="email" id="email" required class="form-input w-full px-4 py-2 border rounded-lg">
+                            </div>
+                            
+                            <div>
+                                <label for="phone" class="block text-gray-300 font-medium mb-1">Telefone/WhatsApp *</label>
+                                <input type="tel" id="phone" required class="form-input w-full px-4 py-2 border rounded-lg">
+                            </div>
+                            
+                            <div>
+                                <label for="event-type" class="block text-gray-300 font-medium mb-1">Tipo de Evento *</label>
+                                <select id="event-type" required class="form-input w-full px-4 py-2 border rounded-lg">
+                                    <option value="">Selecione...</option>
+                                    <option value="Casamento">Casamento</option>
+                                    <option value="Aniversário">Aniversário</option>
+                                    <option value="Corporativo">Evento Corporativo</option>
+                                    <option value="Social">Evento Social</option>
+                                    <option value="Outro">Outro</option>
+                                </select>
+                            </div>
+                            
+                            <div>
+                                <label for="message" class="block text-gray-300 font-medium mb-1">Mensagem/Observações</label>
+                                <textarea id="message" rows="3" class="form-input w-full px-4 py-2 border rounded-lg"></textarea>
+                            </div>
+                            
+                            <div class="pt-4">
+                                <button type="submit" class="w-full bg-neon-accent hover:bg-neon-hover text-dark-primary font-bold py-3 px-4 rounded-full transition transform hover:scale-[1.01] shadow-md shadow-neon-accent/50">
+                                    Enviar Solicitação <i class="fas fa-paper-plane ml-2"></i>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="search-section" class="hidden fade-in">
+            <div class="bg-dark-secondary modern-card p-6 rounded-xl">
+                <h1 class="text-3xl font-bold text-neon-accent mb-6 text-center">Pesquisar Data Específica</h1>
+                <div class="flex justify-center items-center py-6">
+                    <div class="w-full max-w-lg bg-dark-primary p-8 rounded-xl border border-gray-700/50 shadow-inner">
+                        <p class="text-center text-gray-400 mb-6">Navegue diretamente no calendário selecionando o mês e o ano.</p>
+                        <div class="space-y-4">
+                            <div>
+                                <label for="search-month" class="block text-gray-300 font-medium mb-1">Mês</label>
+                                <select id="search-month" class="form-input w-full px-4 py-2 border rounded-lg"></select>
+                            </div>
+                            <div>
+                                <label for="search-year" class="block text-gray-300 font-medium mb-1">Ano</label>
+                                <select id="search-year" class="form-input w-full px-4 py-2 border rounded-lg"></select>
+                            </div>
+                            <div class="pt-4">
+                                <button id="search-date-btn" class="w-full bg-neon-accent hover:bg-neon-hover text-dark-primary font-bold py-3 px-4 rounded-full transition transform hover:scale-[1.01]">
+                                    <i class="fas fa-search mr-2"></i> Buscar Data
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <section id="info-section" class="hidden fade-in">
+            <div class="bg-dark-secondary modern-card p-6 rounded-xl">
+                <h1 class="text-3xl font-bold text-neon-accent mb-6 border-b border-gray-700/50 pb-3">Informações e FAQ</h1>
+                
+                <div class="prose max-w-none text-gray-300">
+                    <h2 class="text-2xl font-semibold text-neon-accent mb-4">Como Solicitar uma Data</h2>
+                    <ol class="list-decimal list-inside pl-2 space-y-3 mb-8 text-gray-400">
+                        <li>Acesse a aba **Agendar** e consulte a disponibilidade no calendário.</li>
+                        <li>Clique nos dias com status **Disponível** (Verde) para selecionar a data.</li>
+                        <li>Preencha o formulário com todos os seus dados e detalhes do evento.</li>
+                        <li>Ao clicar em **Enviar Solicitação**, o status da data muda para **A Confirmar** no nosso sistema.</li>
+                        <li>Você será redirecionado para o WhatsApp para formalizar e aguardar a resposta da nossa equipe.</li>
+                    </ol>
+                    
+                    <h2 class="text-2xl font-semibold text-neon-accent mb-4">Políticas de Agendamento</h2>
+                    <ul class="list-disc list-inside pl-2 space-y-3 mb-8 text-gray-400">
+                        <li>A data é garantida apenas após a **confirmação do pagamento da reserva** pelo administrador.</li>
+                        <li>Solicitações ficam no status **A Confirmar** por no máximo 24 horas úteis.</li>
+                        <li>Cancelamentos com menos de 7 dias de antecedência podem ter multas aplicadas.</li>
+                    </ul>
+                    
+                    <h2 class="text-2xl font-semibold text-neon-accent mb-4">Dúvidas Frequentes</h2>
+                    <div class="space-y-4">
+                        <div class="border-b border-gray-700 pb-4">
+                            <h3 class="font-semibold text-lg text-gray-200">Em quanto tempo recebo a confirmação final?</h3>
+                            <p class="text-gray-400">Nossa equipe responderá sua solicitação via WhatsApp em no máximo 24 horas úteis.</p>
+                        </div>
+                        <div class="border-b border-gray-700 pb-4">
+                            <h3 class="font-semibold text-lg text-gray-200">Qual a diferença entre "Reservado" e "A Confirmar"?</h3>
+                            <p class="text-gray-400">**A Confirmar** (Laranja) significa que recebemos sua solicitação e estamos processando o pagamento. **Reservado** (Vermelho) significa que a data está paga e totalmente garantida por outro cliente.</p>
+                        </div>
+                        <div class="border-b border-gray-700 pb-4">
+                            <h3 class="font-semibold text-lg text-gray-200">Quais formas de pagamento são aceitas?</h3>
+                            <p class="text-gray-400">Aceitamos Pix, Transferência Bancária e Cartão de Crédito (com taxa).</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-10 bg-dark-primary p-6 rounded-xl border border-neon-accent/30 text-gray-200 text-center">
+                    <h2 class="text-xl font-semibold text-neon-accent mb-4">Fale Conosco</h2>
+                    <p class="mb-4 text-gray-400">Para dúvidas urgentes, entre em contato direto:</p>
+                    <a href="https://wa.me/5519993252814" target="_blank" class="inline-flex items-center bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-8 rounded-full transition transform hover:scale-105 shadow-md shadow-green-600/50">
+                        <i class="fab fa-whatsapp text-xl mr-2"></i> Enviar Mensagem via WhatsApp
+                    </a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bg-black text-gray-400 py-8">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div>
+                    <h3 class="text-xl font-bold mb-4 text-white">A&amp;M Produções</h3>
+                    <p>Agendamento online: inovação e facilidade para seu evento.</p>
+                </div>
+                
+                <div>
+                    <h3 class="text-xl font-bold mb-4 text-white">Navegação</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#" onclick="showSection('home')" class="hover:text-neon-accent transition">Início</a></li>
+                        <li><a href="#" onclick="showSection('schedule')" class="hover:text-neon-accent transition">Agendar</a></li>
+                        <li><a href="#" onclick="showSection('info')" class="hover:text-neon-accent transition">Informações</a></li>
+                        <li id="pwa-install-container"></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h3 class="text-xl font-bold mb-4 text-white">Contato</h3>
+                    <p><i class="fas fa-phone-alt mr-2 text-neon-accent"></i> (19) 99325-2814</p>
+                    <p><i class="fas fa-envelope mr-2 text-neon-accent"></i> aem.producoes.visuais@gmail.com</p>
+                </div>
+            </div>
+            
+            <div class="border-t border-gray-800 mt-8 pt-6 text-center">
+                <p>&copy; 2025 A&amp;M Produções. Desenvolvido com paixão.</p>
+            </div>
+        </div>
+    </footer>
+
+    <div id="error-modal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 hidden">
+        <div class="bg-dark-secondary rounded-xl p-8 max-w-md w-full mx-4 border border-red-500 shadow-2xl">
+            <div class="text-center">
+                <div class="w-16 h-16 bg-red-800/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-exclamation-triangle text-red-500 text-3xl"></i>
+                </div>
+                <h3 class="text-2xl font-bold text-gray-100 mb-3">Atenção!</h3>
+                <p id="error-message" class="text-gray-300 mb-6">Mensagem de erro padrão.</p>
+                <button onclick="hideModal('error-modal')" class="bg-neon-accent hover:bg-neon-hover text-dark-primary font-bold py-2 px-6 rounded-full transition">
+                    Entendido
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+
+    <script>
+        // Bloco de Configuração do Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyAeMPTFojvwJ00ZUe6KLlvaU7jN1FERAKU",
+            authDomain: "aem-producoes-agendament-1c4f8.firebaseapp.com",
+            projectId: "aem-producoes-agendament-1c4f8",
+            storageBucket: "aem-producoes-agendament-1c4f8.appspot.com",
+            messagingSenderId: "960807287039",
+            appId: "1:960807287039:web:df37f05bdf8424140a34ca"
+        };
+
+        // Inicializa o Firebase (apenas se ainda não foi inicializado)
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+      
+        // Cria uma referência para o nosso banco de dados Firestore
+        const db = firebase.firestore();
+
+        // =====================================================================
+        // INÍCIO DO CÓDIGO JAVASCRIPT PRINCIPAL DO SITE
+        // =====================================================================
+
+        // Variáveis globais
+        let availableDates = [];
+        let selectedDates = [];
+        const whatsappNumber = "5519993252814";
+        let currentMonthView = new Date();
+
+        // --- Funções de Controle de UI (Interface do Usuário) ---
+
+        function showSection(sectionId) {
+            // Adiciona a classe 'hidden' a todas as seções
+            document.getElementById('home-section').classList.add('hidden');
+            document.getElementById('schedule-section').classList.add('hidden');
+            document.getElementById('info-section').classList.add('hidden');
+            document.getElementById('search-section').classList.add('hidden');
+            
+            // Remove a classe 'hidden' da seção alvo e ativa a animação fade-in
+            document.getElementById(`${sectionId}-section`).classList.remove('hidden');
+            document.getElementById(`${sectionId}-section`).classList.add('fade-in');
+
+            // Se a seção de agendamento for aberta, redesenha o calendário com os dados já existentes
+            if (sectionId === 'schedule') {
+                generateCalendar();
+            }
+        }
+
+        function showModal(modalId, message = null) {
+            if (message && modalId === 'error-modal') {
+                document.getElementById('error-message').textContent = message;
+            }
+            document.getElementById(modalId).classList.remove('hidden');
+        }
+
+        function hideModal(modalId) {
+            document.getElementById(modalId).classList.add('hidden');
+        }
+        
+        // --- Funções de Dados e Formatação ---
+
+        function updateAvailableDatesDisplay() {
+            const availableDatesContainer = document.getElementById('available-dates');
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            // Filtra por datas disponíveis e futuras
+            const futureAvailable = availableDates
+                .filter(dateItem => {
+                    const dateObj = new Date(dateItem.date + 'T12:00:00'); 
+                    return dateItem.status === 'Disponível' && dateObj >= today;
+                })
+                .sort((a, b) => new Date(a.date) - new Date(b.date));
+
+            if (futureAvailable.length === 0) {
+                availableDatesContainer.innerHTML = `<div class="text-center py-4 bg-dark-primary rounded-lg col-span-full text-yellow-500 border border-yellow-500/20">Nenhuma data disponível para agendamento no momento.</div>`;
+                return;
+            }
+
+            const datesToShow = futureAvailable.slice(0, 6);
+            availableDatesContainer.innerHTML = datesToShow.map(dateItem => {
+                const formatted = formatDateForDisplay(dateItem.date);
+                return `<div class="text-center py-4 bg-status-available rounded-xl cursor-pointer text-white font-semibold hover:bg-status-available/80 transition transform hover:scale-105 shadow-md shadow-status-available/30" onclick="selectDateFromList('${dateItem.date}')">
+                            <div class="font-bold text-xl">${formatted.dayOfMonth}</div>
+                            <div class="text-sm">${formatted.monthShort.replace('.', '')}</div>
+                        </div>`;
+            }).join('');
+        }
+
+        function formatDateForDisplay(dateString) {
+            const date = new Date(dateString + 'T12:00:00');
+            return {
+                full: date.toLocaleDateString('pt-BR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }),
+                dayOfMonth: date.toLocaleDateString('pt-BR', { day: 'numeric' }),
+                monthShort: date.toLocaleDateString('pt-BR', { month: 'short' }),
+            };
+        }
+
+        function formatDateForForm(dateString) {
+            const date = new Date(dateString + 'T12:00:00');
+            return date.toLocaleDateString('pt-BR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+        }
+
+        function selectDateFromList(dateString) {
+            // Limpa a seleção anterior e adiciona a nova data
+            selectedDates = [dateString];
+            updateSelectedDatesDisplay();
+            
+            // Centraliza o calendário no mês da data selecionada
+            const dateFromList = new Date(dateString + 'T12:00:00');
+            currentMonthView = dateFromList;
+
+            showSection('schedule');
+        }
+
+        // --- Funções do Calendário ---
+
+        function generateCalendar() {
+            const calendarGridContainer = document.getElementById('calendar');
+            const currentMonthYearDisplay = document.getElementById('current-month-year');
+            const monthNames = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+            currentMonthYearDisplay.textContent = `${monthNames[currentMonthView.getMonth()]} ${currentMonthView.getFullYear()}`;
+
+            let daysHtml = '';
+            const firstDayOfMonth = new Date(currentMonthView.getFullYear(), currentMonthView.getMonth(), 1).getDay();
+            const daysInMonth = new Date(currentMonthView.getFullYear(), currentMonthView.getMonth() + 1, 0).getDate();
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            const isMobile = window.innerWidth < 480;
+            const abbreviations = { 
+                'Disponível': 'Disp.', 
+                'Reservado': 'Reserv.', 
+                'A Confirmar': 'A Conf.', 
+                'Indisponível': 'INDISP.', 
+                'Data passada': 'Passou' 
+            };
+
+            for (let i = 0; i < firstDayOfMonth; i++) {
+                daysHtml += `<div class="py-2"></div>`;
+            }
+
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dateISO = `${currentMonthView.getFullYear()}-${(currentMonthView.getMonth() + 1).toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
+                const dateObj = new Date(dateISO + 'T12:00:00');
+                const dateInfo = availableDates.find(d => d.date === dateISO);
+
+                let statusClass = 'disabled';
+                let statusText = 'Indisponível';
+                let onClickHandler = '';
+                let isSelected = selectedDates.includes(dateISO);
+                let isBookable = false; // Se a data é futura e não está reservada
+
+                if (dateObj < today) {
+                    statusClass = 'disabled';
+                    statusText = 'Data passada';
+                } else {
+                    if (dateInfo) {
+                        statusText = dateInfo.status;
+                        const checkStatus = (statusText || "").toLowerCase().trim();
+                        if (checkStatus.includes('disponível') || checkStatus.includes('disponivel')) {
+                            statusClass = 'available';
+                            isBookable = true;
+                            onClickHandler = `selectDate('${dateISO}')`;
+                        } else if (checkStatus.includes('reservado') || checkStatus.includes('reservada')) {
+                            statusClass = 'booked';
+                        } else if (checkStatus.includes('confirmar') || checkStatus.includes('confirmação')) {
+                            statusClass = 'to-confirm';
+                        } else if (checkStatus.includes('indisponível') || checkStatus.includes('indisponivel')) {
+                            statusClass = 'disabled status-indisponivel';
+                            statusText = 'Indisponível';
+                        } else {
+                            // Status não mapeado assume Cinza
+                            statusClass = 'disabled';
+                            statusText = 'Indisponível';
+                        }
+                    } else {
+                        // Se não existe no banco (e é futura), consideramos Disponível para solicitação
+                        statusClass = 'available';
+                        statusText = 'Disponível';
+                        isBookable = true;
+                        onClickHandler = `selectDate('${dateISO}')`; 
+                    }
+                }
+                
+                // Trata datas passadas como disabled e cinza
+                if (dateObj < today) {
+                    statusClass = 'disabled';
+                    statusText = 'Data passada';
+                    onClickHandler = ''; 
+                }
+
+                let displayText = isMobile ? (abbreviations[statusText] || statusText) : statusText;
+                if (dateObj < today) displayText = "Passado";
+
+                const clientName = dateInfo && dateInfo.nome_cliente ? dateInfo.nome_cliente : "";
+                const iconHtml = (statusClass === 'booked' || (statusClass === 'disabled' && clientName)) ? '<i class="fas fa-user-friends absolute top-2 right-2 text-white/40 text-[10px]"></i>' : '';
+                const nameHtml = '<div class="mt-4 mb-auto"></div>';
+                
+                daysHtml += `<div class="calendar-day ${statusClass} ${isSelected ? 'selected' : ''}" ${onClickHandler ? `onclick="selectDate('${dateISO}')"` : ''} title="${statusText}">
+                                ${iconHtml}
+                                <div class="calendar-day-number">${day}</div>
+                                ${nameHtml}
+                                <div class="calendar-day-status font-bold">${displayText}</div>
+                             </div>`;
+            }
+            calendarGridContainer.innerHTML = daysHtml;
+        } 
+        
+        function updateSelectedDatesDisplay() {
+            const displayInput = document.getElementById('selected-date');
+            const datePicker = document.getElementById('date-picker');
+
+            if (selectedDates.length === 0) {
+                displayInput.value = 'Nenhuma data selecionada';
+                datePicker.value = '';
+                return;
+            }
+            selectedDates.sort();
+
+            const formattedDates = selectedDates.map(date => {
+                const d = new Date(date + 'T12:00:00');
+                return d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+            }).join(', ');
+
+            displayInput.value = formattedDates;
+            // Define o date-picker para a última data selecionada (para navegação)
+            datePicker.value = selectedDates[selectedDates.length - 1]; 
+        }
+
+        function selectDate(dateStr) {
+            const dateInfo = availableDates.find(d => d.date === dateStr);
+            
+            // Previne a seleção se a data estiver Reservada, A Confirmar ou Indisponível (se existir no banco)
+            const checkStatus = (dateInfo?.status || "").toLowerCase().trim();
+            const isBlocked = checkStatus.includes('reservado') || checkStatus.includes('confirmar') || checkStatus.includes('indisponível') || checkStatus.includes('indisponivel');
+            
+            if (dateInfo && isBlocked) {
+                 showModal('error-modal', `A data ${formatDateForForm(dateStr)} está com status: ${dateInfo.status}. Não é possível selecionar.`);
+                 return;
+            }
+            
+            // Acha o elemento no calendário
+            const clickedElement = document.querySelector(`[onclick="selectDate('${dateStr}')"]`);
+            let targetElement = null;
+            if (clickedElement && clickedElement.classList.contains('calendar-day')) {
+                targetElement = clickedElement;
+            } else {
+                targetElement = document.querySelector(`.calendar-day.available[title*='Disponível'][onclick*='${dateStr}']`);
+            }
+            
+            const dateIndex = selectedDates.indexOf(dateStr);
+
+            if (dateIndex > -1) {
+                selectedDates.splice(dateIndex, 1);
+                if (targetElement) {
+                    targetElement.classList.remove('selected');
+                }
+            } else {
+                selectedDates.push(dateStr);
+                if (targetElement) {
+                    targetElement.classList.add('selected');
+                }
+            }
+            updateSelectedDatesDisplay();
+        }
+
+        function navigateMonth(direction) {
+            currentMonthView.setMonth(currentMonthView.getMonth() + (direction === 'prev' ? -1 : 1));
+            generateCalendar();
+        }
+
+        document.getElementById('date-picker').addEventListener('change', function(e) {
+            const datePickerValue = e.target.value;
+            if (datePickerValue) {
+                const dateFromPicker = new Date(datePickerValue + 'T12:00:00');
+                const today = new Date();
+                today.setHours(0,0,0,0);
+
+                if (dateFromPicker < today) {
+                    showModal('error-modal', 'Por favor, selecione uma data futura ou o dia de hoje.');
+                    e.target.value = selectedDates.length > 0 ? selectedDates[selectedDates.length - 1] : '';
+                    return;
+                }
+
+                const dateInfo = availableDates.find(d => d.date === datePickerValue);
+
+                // Permite seleção apenas se o status for 'Disponível' ou se a data não existir no banco
+                const checkStatus = (dateInfo?.status || "").toLowerCase().trim();
+                const isBlocked = dateInfo && !checkStatus.includes('disponível') && !checkStatus.includes('disponivel');
+
+                if (isBlocked) {
+                    showModal('error-modal', `A data ${formatDateForForm(datePickerValue)} está com status: ${dateInfo.status}. Não é possível solicitar.`);
+                    e.target.value = selectedDates.length > 0 ? selectedDates[selectedDates.length - 1] : '';
+                    return;
+                }
+                
+                if (!selectedDates.includes(datePickerValue)) {
+                    selectedDates.push(datePickerValue);
+                }
+                
+                updateSelectedDatesDisplay();
+                currentMonthView = dateFromPicker;
+                generateCalendar();
+            }
+        });
+
+        document.getElementById('schedule-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            if (selectedDates.length === 0) {
+                showModal('error-modal', 'Por favor, selecione pelo menos uma data para agendamento no calendário.');
+                return;
+            }
+            
+            const form = this;
+            const submitButton = form.querySelector('button[type="submit"]');
+            
+            const name = document.getElementById('name').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const phone = document.getElementById('phone').value.trim();
+            const eventType = document.getElementById('event-type').value;
+            const message = document.getElementById('message').value.trim();
+
+            const formattedDatesList = selectedDates.sort().map(date => {
+                const d = new Date(date + 'T12:00:00');
+                return d.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+            }).join(' e ');
+
+            // Verifica se é singular ou plural
+            const dateCount = selectedDates.length;
+            const datePhrase = dateCount > 1 ? `as seguintes datas:` : `a seguinte data:`;
+
+            if (!name || !email || !phone || !eventType) {
+                showModal('error-modal', 'Por favor, preencha todos os campos obrigatórios (*).');
+                return;
+            }
+            
+            submitButton.disabled = true;
+            submitButton.innerHTML = `<i class="fas fa-spinner fa-spin mr-2"></i> Enviando Solicitação...`;
+
+            // 1. Gravar/Atualizar Status no Firestore para 'A Confirmar'
+            try {
+                for (const date of selectedDates) {
+                    const dateISO = date;
+                    const dateInfo = availableDates.find(d => d.date === dateISO);
+
+                    // Verifica se a data já foi reservada por outra pessoa
+                    if (dateInfo && dateInfo.status === 'Reservado') {
+                         console.warn(`Data ${dateISO} já está reservada. Pulando gravação no Firestore.`);
+                         continue; 
+                    }
+                    
+                    // Usa a data ISO como ID do documento para facilitar a localização
+                    const docRef = db.collection('datas').doc(dateISO);
+                    
+                    // Salva a solicitação com status 'A Confirmar'
+                    await docRef.set({
+                        data: dateISO,
+                        status: 'A Confirmar', 
+                        nome_cliente: name, // Usando o novo campo
+                        email: email,
+                        phone: phone,
+                        eventType: eventType,
+                        message: message,
+                        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                    }, { merge: true });
+                }
+                
+                // 2. Montar e Abrir o WhatsApp (NOVO FORMATO SOLICITADO)
+                const whatsappMessage = `Olá, meu nome é *${name}*! \n\n` +
+                                      `Gostaria de solicitar ${datePhrase}\n` +
+                                      `*Datas:* ${formattedDatesList}\n\n` +
+                                      `*Detalhes do Evento:*\n` +
+                                      `*Tipo:* ${eventType}\n` +
+                                      `*Email:* ${email}\n` +
+                                      `*Telefone:* ${phone}\n` +
+                                      `*Observações:* ${message || 'Nenhuma'}\n\n` +
+                                      `Aguardo o seu retorno.`;
+
+
+                const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(whatsappMessage)}`;
+                
+                // Abre o WhatsApp
+                window.open(whatsappUrl, '_blank');
+
+                // 3. Limpar formulário e mostrar sucesso
+                form.reset();
+                selectedDates = [];
+                updateSelectedDatesDisplay();
+                
+                // Mensagem de sucesso ajustada para o novo fluxo
+                showModal('error-modal', `Solicitação de agendamento enviada com sucesso! Você será redirecionado para o WhatsApp para formalizar a solicitação. A data já está marcada como 'A Confirmar' no nosso sistema.`);
+
+
+            } catch (error) {
+                console.error("Erro ao gravar no Firestore: ", error);
+                showModal('error-modal', 'Erro ao enviar solicitação (Erro no Firebase). Por favor, tente novamente ou contate o administrador diretamente.');
+            } finally {
+                submitButton.disabled = false;
+                submitButton.innerHTML = `Enviar Solicitação <i class="fas fa-paper-plane ml-2"></i>`;
+            }
+        });
+
+        // --- Dark mode e Funções de Pesquisa ---
+        const darkModeToggle = document.getElementById('dark-mode-toggle');
+        const darkModeIcon = darkModeToggle.querySelector('i');
+        const bodyElement = document.body;
+
+        function applyDarkMode(isDark) {
+            // No novo design, o dark mode é o padrão. Este toggle apenas inverte.
+            if (!isDark) {
+                // Modo Claro - Remove a classe 'dark' do body
+                bodyElement.classList.remove('dark');
+                darkModeIcon.classList.remove('fa-sun');
+                darkModeIcon.classList.add('fa-moon');
+                bodyElement.classList.add('bg-gray-100'); // Fundo claro
+                bodyElement.classList.remove('bg-dark-primary');
+            } else {
+                // Modo Escuro (Padrão) - Adiciona a classe 'dark'
+                bodyElement.classList.add('dark');
+                darkModeIcon.classList.remove('fa-moon');
+                darkModeIcon.classList.add('fa-sun');
+                bodyElement.classList.remove('bg-gray-100');
+                bodyElement.classList.add('bg-dark-primary');
+            }
+        }
+
+        darkModeToggle.addEventListener('click', function() {
+            const loadingSpinner = document.getElementById('loading-spinner');
+            loadingSpinner.classList.remove('hidden');
+
+            setTimeout(() => {
+                const isDark = document.body.classList.contains('dark');
+                applyDarkMode(!isDark);
+                localStorage.setItem('darkMode', !isDark);
+                loadingSpinner.classList.add('hidden');
+            }, 300);
+        });
+        
+        function populateSearchFields() {
+            const monthSelect = document.getElementById('search-month');
+            const yearSelect = document.getElementById('search-year');
+            const monthNames = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+            const currentYear = new Date().getFullYear();
+
+            monthNames.forEach((month, index) => {
+                const option = document.createElement('option');
+                option.value = index;
+                option.textContent = month;
+                monthSelect.appendChild(option);
+            });
+
+            for (let year = currentYear - 1; year <= currentYear + 5; year++) {
+                const option = document.createElement('option');
+                option.value = year;
+                option.textContent = year;
+                yearSelect.appendChild(option);
+            }
+            
+            yearSelect.value = currentYear;
+            monthSelect.value = new Date().getMonth();
+        }
+
+        function handleDateSearch() {
+            const month = document.getElementById('search-month').value;
+            const year = document.getElementById('search-year').value;
+            currentMonthView = new Date(year, month, 1);
+            showSection('schedule'); 
+        }
+
+        // --- INICIALIZAÇÃO E OUVINTE EM TEMPO REAL ---
+        
+        db.collection('datas').onSnapshot(function(snapshot) {
+            console.log("Recebendo atualização do Firebase em tempo real!");
+            
+            // Mapeia os documentos. Se o ID do documento não for um formato ISO, usa o campo 'data' (legacy)
+            availableDates = snapshot.docs.map(doc => {
+                const data = doc.data();
+                return {
+                    date: data.data || doc.id,
+                    status: data.status,
+                    nome_cliente: data.nome_cliente
+                };
+            });
+
+            // Redesenha as partes visuais da página com os novos dados
+            updateAvailableDatesDisplay();
+            generateCalendar(); 
+
+        }, function(error) {
+            console.error("Erro no ouvinte em tempo real: ", error);
+            const availableDatesContainer = document.getElementById('available-dates');
+            availableDatesContainer.innerHTML = `<div class="text-center py-4 bg-red-800/20 text-red-500 rounded-lg col-span-full border border-red-500/50">Erro ao carregar o calendário. Verifique a conexão.</div>`;
+        });
+
+        // Event listener para quando a página inteira carregar
+        document.addEventListener('DOMContentLoaded', function() {
+            // Inicializa o dark mode com base na preferência salva
+            const savedDarkMode = localStorage.getItem('darkMode');
+            if (savedDarkMode === 'false') {
+                applyDarkMode(false);
+            } else {
+                 applyDarkMode(true); // O modo escuro é o padrão visual
+            }
+            
+            // Mostra a seção inicial
+            showSection('home');
+            
+            // Configura a funcionalidade do logo
+            const logoPreview = document.getElementById('logo-preview');
+            // A funcionalidade de prompt foi removida para usar a URL fixa.
+            // Mantendo apenas a verificação de fallback de imagem (onerror)
+            
+            // Adiciona os Event Listeners para navegação do calendário e pesquisa
+            document.getElementById('prev-month-btn').addEventListener('click', () => navigateMonth('prev'));
+            document.getElementById('next-month-btn').addEventListener('click', () => navigateMonth('next'));
+            populateSearchFields();
+            document.getElementById('search-date-btn').addEventListener('click', handleDateSearch);
+            
+            // Corrige o bug de navegação que pode deixar datas selecionadas em meses passados
+            currentMonthView = new Date();
+            generateCalendar();
+        });
+
+    </script>
+</body>
+</html>
