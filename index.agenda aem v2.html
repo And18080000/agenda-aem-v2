@@ -213,12 +213,13 @@
 
         /* Ajustes específicos para mobile */
         @media (max-width: 640px) {
-            .calendar-day { min-height: 58px !important; padding: 4px !important; border-radius: 0.5rem; }
-            .calendar-day-status { font-size: 0.55rem !important; }
-            .calendar-day-number { font-size: 0.9rem !important; }
-            .logo-preview { max-height: 45px !important; }
-            .modern-card { padding: 1.25rem !important; }
-            #calendar-header div { font-size: 0.75rem; }
+            .calendar-day { aspect-ratio: 1 / 1 !important; min-height: auto !important; padding: 4px !important; border-radius: 0.4rem; justify-content: center !important; }
+            .calendar-day-status { font-size: 0.55rem !important; font-weight: 800 !important; line-height: 1; margin-top: 2px !important; }
+            .calendar-day-number { font-size: 1rem !important; align-self: center !important; }
+            .logo-preview { max-height: 55px !important; }
+            .modern-card { padding: 1.5rem 1rem !important; }
+            #calendar-header div { font-size: 0.8rem; font-weight: 800; color: #60A5FA; }
+            .header-nav-btn { padding: 0.6rem 0.8rem !important; font-size: 0.8rem !important; font-weight: 700 !important; }
         }
     </style>
 </head>
@@ -231,11 +232,11 @@
                     <!-- LOGO ATUALIZADA -->
                     <img id="logo-preview" src="https://placehold.co/600x120/1c2833/3B82F6?text=A%26M+Produções" alt="Logo A&amp;M Produções" class="logo-preview" onerror="this.onerror=null;this.src='https://placehold.co/600x120/1c2833/3B82F6?text=A%26M+Produções'">
                 </div>
-                <div class="flex space-x-1 sm:space-x-3 items-center overflow-x-auto md:overflow-visible w-full md:w-auto justify-start md:justify-end scrollbar-hide pb-2 md:pb-0">
-                    <button onclick="showSection('home')" class="whitespace-nowrap px-3 py-2 md:px-4 text-xs sm:text-base rounded-full hover:bg-neon-accent/20 transition text-gray-200 bg-dark-primary md:bg-transparent">Início</button>
-                    <button onclick="showSection('schedule')" class="whitespace-nowrap px-3 py-2 md:px-4 text-xs sm:text-base rounded-full hover:bg-neon-accent/20 transition text-gray-200 bg-dark-primary md:bg-transparent">Agendar</button>
-                    <button onclick="showSection('search')" class="whitespace-nowrap px-3 py-2 md:px-4 text-xs sm:text-base rounded-full hover:bg-neon-accent/20 transition text-gray-200 bg-dark-primary md:bg-transparent">Pesquisar</button>
-                    <button onclick="showSection('info')" class="whitespace-nowrap px-3 py-2 md:px-4 text-xs sm:text-base rounded-full hover:bg-neon-accent/20 transition text-gray-200 bg-dark-primary md:bg-transparent">Informações</button>
+                <div class="flex space-x-2 sm:space-x-3 items-center overflow-x-auto md:overflow-visible w-full md:w-auto justify-start md:justify-end scrollbar-hide pb-2 md:pb-0">
+                    <button onclick="showSection('home')" class="header-nav-btn whitespace-nowrap px-3 py-2 md:px-4 text-xs sm:text-base rounded-full hover:bg-neon-accent/20 transition text-gray-200 bg-dark-primary md:bg-transparent border border-white/5 md:border-none">Início</button>
+                    <button onclick="showSection('schedule')" class="header-nav-btn whitespace-nowrap px-3 py-2 md:px-4 text-xs sm:text-base rounded-full hover:bg-neon-accent/20 transition text-gray-200 bg-dark-primary md:bg-transparent border border-white/5 md:border-none">Agendar</button>
+                    <button onclick="showSection('search')" class="header-nav-btn whitespace-nowrap px-3 py-2 md:px-4 text-xs sm:text-base rounded-full hover:bg-neon-accent/20 transition text-gray-200 bg-dark-primary md:bg-transparent border border-white/5 md:border-none">Pesquisar</button>
+                    <button onclick="showSection('info')" class="header-nav-btn whitespace-nowrap px-3 py-2 md:px-4 text-xs sm:text-base rounded-full hover:bg-neon-accent/20 transition text-gray-200 bg-dark-primary md:bg-transparent border border-white/5 md:border-none">Informações</button>
                     <button id="dark-mode-toggle" class="flex-shrink-0 p-2 rounded-full hover:bg-neon-accent/20 transition relative text-neon-accent bg-dark-primary md:bg-transparent">
                         <i class="fas fa-sun"></i> <!-- Ícone inicial é o sol, pois o modo escuro é padrão -->
                         <div id="loading-spinner" class="hidden absolute inset-0 flex items-center justify-center">
